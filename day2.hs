@@ -5,8 +5,6 @@ import Data.Functor
 import Data.List
 import qualified Text.ParserCombinators.ReadP as P
 
--- Start working down here
-
 data Dir = F Int | D Int | U Int deriving (Show, Eq)
 
 -- Horizontal, depth
