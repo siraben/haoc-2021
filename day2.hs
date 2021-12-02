@@ -35,7 +35,7 @@ pp = (f <|> d <|> u) <*> (P.skipSpaces *> P.readS_to_P reads) <* P.char '\n'
     u = P.string "up" $> U
     d = P.string "down" $> D
 
-part1 inp' = uncurry (*) (foldl' move (0,0) inp')
+part1 inp' = uncurry (*) (foldl' move (0, 0) inp')
 
 part2 inp' = let (a, b, c) = foldl' move2 (0, 0, 0) inp' in a * b
 
