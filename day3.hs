@@ -28,9 +28,7 @@ fixedPoint f = go
       where
         y = f x
 
--- Start working down here
-
--- most common bit
+-- most common and least common bits
 mcb s = fst $ maximumBy (compare `on` snd) (M.toAscList (freqs s))
 
 lcb s = fst $ minimumBy (compare `on` snd) (M.toAscList (freqs s))
@@ -40,12 +38,12 @@ toBinNum = foldl' f 0
     f n '1' = n * 2 + 1
     f n '0' = n * 2
 
-part1 inp' = (toBinNum x * toBinNum y)
+part1 inp' = toBinNum x * toBinNum y
   where
     f s = (mcb s, lcb s)
     (x, y) = unzip $ map f inp'
 
-part2 inp = toBinNum (snd (head (f1 y))) * toBinNum (snd (head (f2 y)))
+part2 inp = h (f1 y) * h (f2 y)
   where
     g f [x] = [x]
     g f l = zip (tail <$> bs') ns'
@@ -53,7 +51,7 @@ part2 inp = toBinNum (snd (head (f1 y))) * toBinNum (snd (head (f2 y)))
         bs = head . fst <$> l
         (bs', ns') = unzip (filter ((== b) . head . fst) l)
         b = f bs
-
+    h = toBinNum . snd . head
     f1 = fixedPoint (g mcb)
     f2 = fixedPoint (g lcb)
     y = map dup inp
