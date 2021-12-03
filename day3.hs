@@ -2,6 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 import Control.Applicative
 import Control.Monad
@@ -14,10 +15,6 @@ import qualified Data.Map as M
 
 dup a = (a, a)
 
--- | Build a frequency map
-freqs :: (Foldable f, Ord a) => f a -> Map a Int
-freqs = M.fromListWith (+) . map (,1) . toList
-
 -- | Repeat a function until you get the same result twice.
 fixedPoint :: Eq a => (a -> a) -> a -> a
 fixedPoint f = go
@@ -29,19 +26,36 @@ fixedPoint f = go
         y = f x
 
 -- most common and least common bits
-mcb s = fst $ maximumBy (compare `on` snd) (M.toAscList (freqs s))
-
-lcb s = fst $ minimumBy (compare `on` snd) (M.toAscList (freqs s))
-
 toBinNum = foldl' f 0
   where
     f n '1' = n * 2 + 1
     f n '0' = n * 2
 
+mcblcb l = (f p, g p)
+  where
+    f (a, b)
+      | a == b = '1'
+      | a < b = '1'
+      | a > b = '0'
+    g (a, b)
+      | a == b = '0'
+      | a < b = '0'
+      | a > b = '1'
+    p = comp l
+
+mcb = fst . mcblcb
+
+lcb = snd . mcblcb
+
+comp = f' (0, 0)
+  where
+    f' (a, b) [] = (a, b)
+    f' (a, b) ('0' : xs) = f' (a + 1, b) xs
+    f' (a, b) ('1' : xs) = f' (a, b + 1) xs
+
 part1 inp' = toBinNum x * toBinNum y
   where
-    f s = (mcb s, lcb s)
-    (x, y) = unzip $ map f inp'
+    (x, y) = unzip $ map mcblcb inp'
 
 part2 inp = h (f1 y) * h (f2 y)
   where
