@@ -31,27 +31,22 @@ toBinNum = foldl' f 0
     f n '1' = n * 2 + 1
     f n '0' = n * 2
 
-mcblcb l = (f p, g p)
-  where
-    f (a, b)
-      | a == b = '1'
-      | a < b = '1'
-      | a > b = '0'
-    g (a, b)
-      | a == b = '0'
-      | a < b = '0'
-      | a > b = '1'
-    p = comp l
+opp '1' = '0'
+opp '0' = '1'
 
 mcb = fst . mcblcb
 
 lcb = snd . mcblcb
 
-comp = f' (0, 0)
+mcblcb l = (x, opp x)
   where
-    f' (a, b) [] = (a, b)
-    f' (a, b) ('0' : xs) = f' (a + 1, b) xs
-    f' (a, b) ('1' : xs) = f' (a, b + 1) xs
+    f (a, b)
+      | a == b = '1'
+      | a < b = '1'
+      | a > b = '0'
+    x = f (foldl' f' (0, 0) l)
+    f' (a, b) '0' = (a + 1, b)
+    f' (a, b) '1' = (a, b + 1)
 
 part1 inp' = toBinNum x * toBinNum y
   where
