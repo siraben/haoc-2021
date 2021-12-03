@@ -25,8 +25,7 @@ fixedPoint f = go
       where
         y = f x
 
--- most common and least common bits
-toBinNum = foldl' f 0
+fromBinNum = foldl' f 0
   where
     f n '1' = n * 2 + 1
     f n '0' = n * 2
@@ -38,6 +37,7 @@ mcb = fst . mcblcb
 
 lcb = snd . mcblcb
 
+-- most common and least common bits
 mcblcb l = (x, opp x)
   where
     f (a, b)
@@ -48,7 +48,7 @@ mcblcb l = (x, opp x)
     f' (a, b) '0' = (a + 1, b)
     f' (a, b) '1' = (a, b + 1)
 
-part1 inp' = toBinNum x * toBinNum y
+part1 inp' = fromBinNum x * fromBinNum y
   where
     (x, y) = unzip $ map mcblcb inp'
 
@@ -60,7 +60,7 @@ part2 inp = h (f1 y) * h (f2 y)
         bs = head . fst <$> l
         (bs', ns') = unzip (filter ((== b) . head . fst) l)
         b = f bs
-    h = toBinNum . snd . head
+    h = fromBinNum . snd . head
     f1 = fixedPoint (g mcb)
     f2 = fixedPoint (g lcb)
     y = map dup inp
