@@ -170,3 +170,23 @@ variance introduced by outliers: 27% (moderately inflated)
 ```
 </details>
 
+### Day 5
+<details>
+
+```
+benchmarking day5/part1
+time                 121.1 ms   (107.8 ms .. 136.6 ms)
+                     0.988 R²   (0.961 R² .. 1.000 R²)
+mean                 125.8 ms   (122.8 ms .. 131.9 ms)
+std dev              6.364 ms   (2.646 ms .. 9.830 ms)
+variance introduced by outliers: 11% (moderately inflated)
+
+benchmarking day5/part2
+time                 359.7 ms   (253.8 ms .. 437.7 ms)
+                     0.990 R²   (NaN R² .. 1.000 R²)
+mean                 360.6 ms   (345.3 ms .. 376.6 ms)
+std dev              19.61 ms   (8.475 ms .. 25.41 ms)
+variance introduced by outliers: 19% (moderately inflated)
+```
+</details>
+
