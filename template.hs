@@ -109,10 +109,27 @@ fixedPoint f = go
       where
         y = f x
 
+-- | Signum function
+sgn :: (Ord a, Num a) => a -> a
+sgn x
+  | x < 0 = -1
+  | x == 0 = 0
+  | x > 0 = 1
+  | otherwise = undefined
+
+enum :: (Eq t, Num t) => t -> t -> t -> [t]
+enum l s c
+  | l == c = [l]
+  | otherwise = l : enum (l + s) s c
+
+range :: (Num a, Ord a) => a -> a -> [a]
+range a b = enum a (sgn (b - a)) b
+
 -- Start working down here
 part1, part2 :: _ -> Int
 part1 i = undefined
 part2 i = undefined
+
 main = do
   let dayNumber = undefined :: Int
   let dayString = "day" <> show dayNumber
