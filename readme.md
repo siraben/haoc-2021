@@ -150,3 +150,23 @@ variance introduced by outliers: 28% (moderately inflated)
 ```
 </details>
 
+### Day 4
+<details>
+
+```
+benchmarking day4/part1
+time                 5.563 ms   (5.403 ms .. 5.712 ms)
+                     0.994 R²   (0.990 R² .. 0.998 R²)
+mean                 5.634 ms   (5.563 ms .. 5.745 ms)
+std dev              268.0 μs   (195.6 μs .. 366.4 μs)
+variance introduced by outliers: 24% (moderately inflated)
+
+benchmarking day4/part2
+time                 5.643 ms   (5.542 ms .. 5.799 ms)
+                     0.995 R²   (0.991 R² .. 0.998 R²)
+mean                 5.719 ms   (5.648 ms .. 5.872 ms)
+std dev              280.5 μs   (184.5 μs .. 435.8 μs)
+variance introduced by outliers: 27% (moderately inflated)
+```
+</details>
+
