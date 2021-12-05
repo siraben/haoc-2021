@@ -3,15 +3,13 @@
 import Criterion.Main
 import Data.Char
 import Data.Foldable
-import Data.IntMap (IntMap)
-import qualified Data.IntMap as IM
-import Data.Map (Map)
-import qualified Data.Map as M
+import Data.IntSet (IntSet)
+import qualified Data.IntSet as IS
 import qualified Text.ParserCombinators.ReadP as P
 
-part1 = length . IM.filter (>= 2) . foldl' draw mempty
+part1 = IS.size . snd . foldl' draw (mempty, mempty)
 
-part2 = length . IM.filter (>= 2) . foldl' draw2 mempty
+part2 = IS.size . snd . foldl' draw2 (mempty, mempty)
 
 pp = do
   (a :: (Int, Int)) <- pair
@@ -24,25 +22,29 @@ pp = do
   where
     pair = (,) <$> P.readS_to_P reads <*> (P.string "," *> P.readS_to_P reads)
 
-type Grid = IntMap Int
+type Grid = (IntSet, IntSet)
 
 type Line = ((Int, Int), (Int, Int))
 
-initGrid = replicate 1000 (replicate 1000 False)
-
+conv :: (Int, Int) -> Int
 conv (a, b) = a * 1000 + b
+
+ins :: Int -> Grid -> Grid
+ins i (a, b)
+  | IS.member i a = (a, IS.insert i b)
+  | otherwise = (IS.insert i a, b)
 
 draw :: Grid -> Line -> Grid
 draw g ((a, b), (c, d))
-  | a == c = foldl' (\g p -> IM.insertWith (+) (conv p) 1 g) g [(a, x) | x <- [(min b d) .. (max b d)]]
-  | b == d = foldl' (\g p -> IM.insertWith (+) (conv p) 1 g) g [(x, b) | x <- [(min a c) .. (max a c)]]
+  | a == c = foldl' (\g p -> ins (conv p) g) g [(a, x) | x <- [(min b d) .. (max b d)]]
+  | b == d = foldl' (\g p -> ins (conv p) g) g [(x, b) | x <- [(min a c) .. (max a c)]]
   | otherwise = g
 
 draw2 :: Grid -> Line -> Grid
 draw2 g ((a, b), (c, d))
-  | a == c = foldl' (\g p -> IM.insertWith (+) (conv p) 1 g) g [(a, x) | x <- [(min b d) .. (max b d)]]
-  | b == d = foldl' (\g p -> IM.insertWith (+) (conv p) 1 g) g [(x, b) | x <- [(min a c) .. (max a c)]]
-  | abs (a - c) == abs (b - d) = foldl' (\g p -> IM.insertWith (+) (conv p) 1 g) g (zip (enum a m1 c) (enum b m2 d))
+  | a == c = foldl' (\g p -> ins (conv p) g) g [(a, x) | x <- [(min b d) .. (max b d)]]
+  | b == d = foldl' (\g p -> ins (conv p) g) g [(x, b) | x <- [(min a c) .. (max a c)]]
+  | abs (a - c) == abs (b - d) = foldl' (\g p -> ins (conv p) g) g (zip (enum a m1 c) (enum b m2 d))
   | otherwise = g
   where
     enum l s c
