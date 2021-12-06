@@ -11,10 +11,7 @@ splitOn :: String -> String -> [String]
 splitOn sep s = T.unpack <$> T.splitOn (T.pack sep) (T.pack s)
 
 final :: V -> Int
-final = sum . back
-
-back :: V -> [Int]
-back (a, b, c, d, e, f, g, h, i) = [a, b, c, d, e, f, g, h, i]
+final (a, b, c, d, e, f, g, h, i) = a + b + c + d + e + f + g + h + i
 
 part1 :: V -> Int
 part1 = final . apN 80 step
