@@ -9,18 +9,16 @@ import qualified Data.Text as T
 splitOn :: String -> String -> [String]
 splitOn sep s = T.unpack <$> T.splitOn (T.pack sep) (T.pack s)
 
-l = [16, 1, 2, 0, 4, 2, 7, 1, 2, 14]
-
 minMax l = [(minimum l) .. (maximum l)]
 
-part1 = fst . minimumBy (compare `on` fst) . map f . minMax
+part1 l = fst $ minimumBy (compare `on` fst) $ map f $ minMax l
   where
     alignAt n = sum $ map (\x -> abs (x - n)) l
     f x = (alignAt x, x)
 
 sumTo n = (n * (n + 1)) `div` 2
 
-part2 = fst . minimumBy (compare `on` fst) . map f . minMax
+part2 l = fst $ minimumBy (compare `on` fst) $ map f $ minMax l
   where
     alignAt n = sum $ map (\x -> sumTo (abs (x - n))) l
     f x = (alignAt x, x)
