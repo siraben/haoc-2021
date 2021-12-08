@@ -2,6 +2,7 @@
 
 import Criterion.Main
 import Data.Foldable
+import Data.Function
 import Data.List
 import Data.Maybe
 
@@ -22,9 +23,9 @@ mkCan can = zip can ['a' .. 'g']
 apCan can = map (`applyConstraint` mkCan can)
 
 -- is candidate a sol wrt l
-isSol can l = eqSorted (map sort (apCan can l)) constraints
+isSol can l = sort (map sort (apCan can l)) == (fst <$> bbb)
 
-bbb = zip constraints [0 .. 9]
+bbb = sortBy (compare `on` fst) (zip constraints [0 .. 9])
 
 constraints :: [String]
 constraints = [_0, _1, _2, _3, _4, _5, _6, _7, _8, _9]
@@ -39,11 +40,6 @@ constraints = [_0, _1, _2, _3, _4, _5, _6, _7, _8, _9]
     _7 = "acf"
     _8 = "abcdefg"
     _9 = "abcdfg"
-
-combs = permutations ['a' .. 'g']
-
-x :: ([String], [String])
-x = (["acedgfb", "cdfbe", "gcdfa", "fbcad", "dab", "cefabd", "cdfgeb", "eafb", "cagedb", "ab"], [])
 
 toNum = foldl (\x y -> 10 * x + y) 0
 
