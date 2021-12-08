@@ -1,8 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 
 import Criterion.Main
@@ -56,7 +51,7 @@ sol = head . (\x -> filter (`isSol` x) (permutations ['a' .. 'g']))
 
 part1 inp = sum $ countIf f . snd <$> inp
 
-part2 inp = sum $ map (\(x, y) -> let s = sol x in toNum (map ((`lup` bbb) . sort) (apCan s y))) inp
+part2 inp = sum $ map (\(x, y) -> toNum (map ((`lup` bbb) . sort) (apCan (sol x) y))) inp
 
 main :: IO ()
 main = do
