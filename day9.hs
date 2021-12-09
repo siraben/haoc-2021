@@ -5,6 +5,7 @@ import Criterion.Main
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Ord
 import qualified Data.Set as S
 
 -- | Repeat a function until you get the same result twice.
@@ -29,7 +30,7 @@ checkVal :: Grid -> (Int, Int) -> Bool
 checkVal g p@(x, y)
   | M.notMember p g = False
   | otherwise =
-    check (x -1, y) && check (x + 1, y) && check (x, y -1) && check (x, y + 1)
+    all check [(x -1, y), (x + 1, y), (x, y -1), (x, y + 1)]
   where
     check p = maybe True (n <) (g M.!? p)
     n = g M.! p
@@ -37,7 +38,7 @@ checkVal g p@(x, y)
 -- expand wrt. Grid
 expand g cs = S.union (S.unions (S.map nexts cs)) cs
   where
-    nexts (x, y) = S.filter f (S.fromList [(x -1, y), (x + 1, y), (x, y -1), (x, y + 1)])
+    nexts (x, y) = S.filter f (S.fromList [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)])
       where
         f (a, b) = maybe False (/= '9') (g M.!? (a, b))
 
@@ -46,7 +47,7 @@ part1 (g, w, h) = sum lvls
     pts = [(x, y) | x <- [1 .. h], y <- [1 .. w], checkVal g (x, y)]
     lvls = map (\p -> 1 + read [g M.! p]) pts
 
-part2 (g, pts) = product (take 3 (reverse (sort (map (length . p2) pts))))
+part2 (g, pts) = product (take 3 (sortOn Down (map (length . p2) pts)))
   where
     p2 = fixedPoint (expand g) . S.singleton
 
