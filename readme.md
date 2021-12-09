@@ -255,17 +255,17 @@ variance introduced by outliers: 19% (moderately inflated)
 
 ```
 benchmarking day9/part1
-time                 2.411 ms   (2.190 ms .. 2.641 ms)
-                     0.942 R²   (0.912 R² .. 0.972 R²)
-mean                 2.410 ms   (2.306 ms .. 2.563 ms)
-std dev              414.1 μs   (272.4 μs .. 611.0 μs)
-variance introduced by outliers: 86% (severely inflated)
+time                 2.718 ms   (2.395 ms .. 3.017 ms)
+                     0.906 R²   (0.862 R² .. 0.942 R²)
+mean                 2.647 ms   (2.473 ms .. 2.887 ms)
+std dev              642.8 μs   (538.2 μs .. 753.5 μs)
+variance introduced by outliers: 94% (severely inflated)
 
 benchmarking day9/part2
-time                 51.91 ms   (48.61 ms .. 56.30 ms)
-                     0.986 R²   (0.976 R² .. 0.995 R²)
-mean                 52.61 ms   (49.48 ms .. 60.22 ms)
-std dev              8.979 ms   (3.272 ms .. 15.42 ms)
-variance introduced by outliers: 60% (severely inflated)
+time                 14.79 ms   (13.30 ms .. 16.40 ms)
+                     0.909 R²   (0.832 R² .. 0.961 R²)
+mean                 16.27 ms   (15.22 ms .. 17.52 ms)
+std dev              3.102 ms   (2.379 ms .. 3.856 ms)
+variance introduced by outliers: 78% (severely inflated)
 ```
 </details>

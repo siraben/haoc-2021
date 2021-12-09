@@ -43,10 +43,12 @@ checkVal' g = M.filterWithKey f g
     f (x, y) n = all (check n) [(x -1, y), (x + 1, y), (x, y -1), (x, y + 1)]
     check n p = maybe True (n <) (g M.!? p)
 
--- expand wrt. Grid
-expand :: Grid -> Set Pt -> Set Pt
-expand g cs = S.union (S.unions (S.map nexts cs)) cs
+-- expand wrt. Grid and visited set
+expand :: Grid -> Set Pt -> Set Pt -> Int
+expand g cs vs | S.null cs = S.size vs
+expand g cs vs = expand g (cs' S.\\ vs) (cs' `S.union` vs) -- S.union (S.unions (S.map nexts cs)) cs
   where
+    cs' = S.unions (S.map nexts cs)
     nexts (x, y) = S.filter f (S.fromList [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)])
       where
         f (a, b) = maybe False (/= 9) (g M.!? (a, b))
@@ -60,12 +62,12 @@ part1 (g, w, h) = M.size pts + sum pts
 part2 :: (Grid, Grid) -> Int
 part2 (g, pts) = a * b * c
   where
-    basins = S.map (S.size . p2) pts'
+    basins = S.map p2 pts'
     Just (a, b') = S.maxView basins
     Just (b, b'') = S.maxView b'
     Just (c, _) = S.maxView b''
     pts' = M.keysSet pts
-    p2 = fixedPoint (expand g) . S.singleton
+    p2 x = expand g (S.singleton x) S.empty
 
 main = do
   let dayNumber = 9 :: Int
