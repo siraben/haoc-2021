@@ -19,12 +19,12 @@ fixedPoint f = go
         y = f x
 
 -- valleyFind
-type Grid = Map (Int, Int) Char
+type Grid = Map (Int, Int) Int
 
 toGrid :: [String] -> Grid
 toGrid g = M.fromList (concatMap dist (zip [1 ..] g))
   where
-    dist (a, b) = zipWith (\x c -> ((a, x), c)) [1 ..] b
+    dist (a, b) = zipWith (\x c -> ((a, x), read [c])) [1 ..] b
 
 checkVal :: Grid -> (Int, Int) -> Bool
 checkVal g p@(x, y)
@@ -40,12 +40,12 @@ expand g cs = S.union (S.unions (S.map nexts cs)) cs
   where
     nexts (x, y) = S.filter f (S.fromList [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)])
       where
-        f (a, b) = maybe False (/= '9') (g M.!? (a, b))
+        f (a, b) = maybe False (/= 9) (g M.!? (a, b))
 
 part1 (g, w, h) = sum lvls
   where
     pts = [(x, y) | x <- [1 .. h], y <- [1 .. w], checkVal g (x, y)]
-    lvls = map (\p -> 1 + read [g M.! p]) pts
+    lvls = map (\p -> 1 + g M.! p) pts
 
 part2 (g, pts) = product (take 3 (sortOn Down (map (length . p2) pts)))
   where
