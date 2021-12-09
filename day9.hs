@@ -44,7 +44,7 @@ checkVal' g = M.filterWithKey f g
     check n p = maybe True (n <) (g M.!? p)
 
 -- expand wrt. Grid
-expand :: Grid -> Set Pt -> Set (Int, Int)
+expand :: Grid -> Set Pt -> Set Pt
 expand g cs = S.union (S.unions (S.map nexts cs)) cs
   where
     nexts (x, y) = S.filter f (S.fromList [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)])
@@ -56,10 +56,15 @@ part1 (g, w, h) = M.size pts + sum pts
   where
     pts = checkVal' g
 
-part2 :: (Grid, Map Pt Int) -> Int
-part2 (g, pts) = product (take 3 (sortOn Down (map (length . p2 . fst) pts')))
+-- Given a grid and its basin points
+part2 :: (Grid, Grid) -> Int
+part2 (g, pts) = a * b * c
   where
-    pts' = M.toAscList pts
+    basins = S.map (S.size . p2) pts'
+    Just (a, b') = S.maxView basins
+    Just (b, b'') = S.maxView b'
+    Just (c, _) = S.maxView b''
+    pts' = M.keysSet pts
     p2 = fixedPoint (expand g) . S.singleton
 
 main = do
