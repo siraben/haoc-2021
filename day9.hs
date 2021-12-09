@@ -6,6 +6,7 @@ import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Ord
+import Data.Set (Set)
 import qualified Data.Set as S
 
 -- | Repeat a function until you get the same result twice.
@@ -18,15 +19,16 @@ fixedPoint f = go
       where
         y = f x
 
--- valleyFind
-type Grid = Map (Int, Int) Int
+type Pt = (Int, Int)
+
+type Grid = Map Pt Int
 
 toGrid :: [String] -> Grid
 toGrid g = M.fromList (concatMap dist (zip [1 ..] g))
   where
     dist (a, b) = zipWith (\x c -> ((a, x), read [c])) [1 ..] b
 
-checkVal :: Grid -> (Int, Int) -> Bool
+checkVal :: Grid -> Pt -> Bool
 checkVal g p@(x, y)
   | M.notMember p g = False
   | otherwise =
@@ -35,20 +37,29 @@ checkVal g p@(x, y)
     check p = maybe True (n <) (g M.!? p)
     n = g M.! p
 
+checkVal' :: Grid -> Grid
+checkVal' g = M.filterWithKey f g
+  where
+    f (x, y) n = all (check n) [(x -1, y), (x + 1, y), (x, y -1), (x, y + 1)]
+    check n p = maybe True (n <) (g M.!? p)
+
 -- expand wrt. Grid
+expand :: Grid -> Set Pt -> Set (Int, Int)
 expand g cs = S.union (S.unions (S.map nexts cs)) cs
   where
     nexts (x, y) = S.filter f (S.fromList [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)])
       where
         f (a, b) = maybe False (/= 9) (g M.!? (a, b))
 
-part1 (g, w, h) = sum lvls
+part1 :: (Grid, Int, Int) -> Int
+part1 (g, w, h) = M.size pts + sum pts
   where
-    pts = [(x, y) | x <- [1 .. h], y <- [1 .. w], checkVal g (x, y)]
-    lvls = map (\p -> 1 + g M.! p) pts
+    pts = checkVal' g
 
-part2 (g, pts) = product (take 3 (sortOn Down (map (length . p2) pts)))
+part2 :: (Grid, Map Pt Int) -> Int
+part2 (g, pts) = product (take 3 (sortOn Down (map (length . p2 . fst) pts')))
   where
+    pts' = M.toAscList pts
     p2 = fixedPoint (expand g) . S.singleton
 
 main = do
@@ -59,7 +70,7 @@ main = do
   let w = length (head inp)
   let h = length inp
   let g = toGrid inp
-  let pts = [(x, y) | x <- [1 .. h], y <- [1 .. w], checkVal g (x, y)]
+  let pts = checkVal' g
   print (part1 (g, w, h))
   print (part2 (g, pts))
   defaultMain
