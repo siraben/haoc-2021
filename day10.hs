@@ -2,19 +2,19 @@ import Criterion.Main
 import Data.List
 
 badness :: [Char] -> (Int, [Char])
-badness s = go 0 s []
+badness s = go s []
   where
-    go n ('(' : r) s = go n r (')' : s)
-    go n ('{' : r) s = go n r ('}' : s)
-    go n ('[' : r) s = go n r (']' : s)
-    go n ('<' : r) s = go n r ('>' : s)
-    go n (a : r) (b : s) | a == b = go n r s
-    go n (')' : r) a = (3, a)
-    go n (']' : r) a = (57, a)
-    go n ('}' : r) a = (1197, a)
-    go n ('>' : r) a = (25137, a)
-    go n [] s = (0, s)
-    go _ _ _ = undefined
+    go ('(' : r) s = go r (')' : s)
+    go ('{' : r) s = go r ('}' : s)
+    go ('[' : r) s = go r (']' : s)
+    go ('<' : r) s = go r ('>' : s)
+    go (a : r) (b : s) | a == b = go r s
+    go (')' : r) a = (3, a)
+    go (']' : r) a = (57, a)
+    go ('}' : r) a = (1197, a)
+    go ('>' : r) a = (25137, a)
+    go [] s = (0, s)
+    go _ _ = undefined
 
 corrupted :: String -> Bool
 corrupted = (> 0) . fst . badness
