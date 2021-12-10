@@ -16,9 +16,6 @@ badness s = go s []
     go [] s = (0, s)
     go _ _ = undefined
 
-corrupted :: String -> Bool
-corrupted = (> 0) . fst . badness
-
 median :: [Int] -> Int
 median [] = undefined
 median zs = go zs zs
