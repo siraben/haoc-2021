@@ -8,10 +8,7 @@ badness s = go 0 s []
     go n ('{' : r) s = go n r ('}' : s)
     go n ('[' : r) s = go n r (']' : s)
     go n ('<' : r) s = go n r ('>' : s)
-    go n ('>' : r) ('>' : s) = go n r s
-    go n ('}' : r) ('}' : s) = go n r s
-    go n (']' : r) (']' : s) = go n r s
-    go n (')' : r) (')' : s) = go n r s
+    go n (a : r) (b : s) | a == b = go n r s
     go n (')' : r) a = (3, a)
     go n (']' : r) a = (57, a)
     go n ('}' : r) a = (1197, a)
