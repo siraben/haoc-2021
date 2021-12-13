@@ -307,3 +307,23 @@ mean                 6.322 ms   (6.297 ms .. 6.359 ms)
 std dev              87.78 μs   (60.30 μs .. 142.7 μs)
 ```
 </details>
+
+### Day 13
+<details>
+
+```
+benchmarking day13/part1
+time                 177.4 μs   (175.8 μs .. 179.9 μs)
+                     0.999 R²   (0.999 R² .. 1.000 R²)
+mean                 176.9 μs   (175.9 μs .. 178.5 μs)
+std dev              4.002 μs   (2.264 μs .. 6.517 μs)
+variance introduced by outliers: 16% (moderately inflated)
+
+benchmarking day13/part2
+time                 35.00 ns   (34.65 ns .. 35.38 ns)
+                     0.998 R²   (0.997 R² .. 0.999 R²)
+mean                 35.05 ns   (34.71 ns .. 35.97 ns)
+std dev              1.796 ns   (716.6 ps .. 3.466 ns)
+variance introduced by outliers: 73% (severely inflated)
+```
+</details>
