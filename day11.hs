@@ -1,64 +1,83 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TupleSections #-}
 
 import Criterion.Main
 import Data.Foldable
-import Data.Map (Map)
-import qualified Data.Map as M
+import qualified Data.IntMap as IM
+import Data.IntMap.Strict (IntMap)
+import Data.IntSet (IntSet)
+import qualified Data.IntSet as S
 
-type Grid = Map (Int, Int) Int
+type Pt = Int
+
+type PtSet = IntSet
+
+type Grid = IntMap Int
+
+conv :: (Int, Int) -> Pt
+conv (x, y) = 100 * x + y
+
+from :: Pt -> (Int, Int)
+from n = (n `div` 100, n `mod` 100)
 
 toGrid :: [[Int]] -> Grid
-toGrid = M.fromList . concat . zipWith (\x l -> zipWith (curry (\((x, a), y) -> ((x, y), a))) (map (x,) l) [1 ..]) [1 ..]
+toGrid = IM.fromList . concat . zipWith (\x l -> zipWith (curry (\((x, a), y) -> (conv (x, y), a))) (map (x,) l) [1 ..]) [1 ..]
 
-nbs (x, y) = [(x + a, y + b) | a <- [-1, 0, 1], b <- [-1, 0, 1], (a, b) /= (0, 0)]
+nbs :: Pt -> [Pt]
+nbs p = [p -101, p -100, p -99, p -1, p + 1, p + 99, p + 100, p + 101]
 
-type Pt = (Int, Int)
-
-tick :: Grid -> ((Int, [Pt]), Grid)
-tick = M.mapAccumWithKey f (0, [])
+tick :: Grid -> ((Int, PtSet), Grid)
+tick = IM.mapAccumWithKey f (0, S.empty)
   where
-    f (s, l) p n | n >= 9 = ((s + 1, p : l), 0)
+    f (s, l) p n | n >= 9 = ((s + 1, S.insert p l), 0)
     f (s, l) p n = ((s, l), n + 1)
 
-propFlashes = until (null . snd . fst) comb
+propFlashes :: ((Int, PtSet), IntMap Int) -> ((Int, PtSet), IntMap Int)
+propFlashes = until (S.null . snd . fst) comb
 
-comb ((s, fs), g) = foldl' f ((s, []), g) fs
+comb :: ((Int, PtSet), IntMap Int) -> ((Int, PtSet), IntMap Int)
+comb ((s, fs), g) = let (s', g') = S.foldl' f (S.empty, g) fs in ((s + S.size s', s'), g')
   where
     -- For each point to flash, consider its neighbors
     -- if the neighbor doesn't exist, ignore it.
-    f ((s, l), g) p = foldl' (\((s, l), g') p -> maybe ((s, l), g') (f s l p g') (g' M.!? p)) ((s, l), g) ns
+    f (l, g) p = foldl' (\(l, g') p -> maybe (l, g') (f l p g') (g' IM.!? p)) (l, g) ns
       where
         -- For a given neighbor,
         -- If it's 0, that means it was just flashed, don't adjust.
-        f s l p g 0 = ((s, l), g)
+        f l p g 0 = (l, g)
         -- If its value is greater than or equal to 9, add it to
         -- the flash queue and insert 0 into that point for the
         -- next round.
-        f s l p g n | n >= 9 = ((s + 1, p : l), M.insert p 0 g)
+        f l p g n | n >= 9 = (S.insert p l, IM.insert p 0 g)
         -- Otherwise increment its value
-        f s l p g n = ((s, l), M.insert p (n + 1) g)
+        f l p g n = (l, IM.insert p (n + 1) g)
         ns = nbs p
 
+run :: Grid -> (Int, IntMap Int)
 run = f . propFlashes . tick
   where
     f ((s, l), m) = (s, m)
 
+countFlashes :: Int -> IntMap Int -> Int
 countFlashes n g = go n g 0
   where
-    go 0 g m = m
-    go n g m = go (n -1) g' (m + m')
+    go 0 g !m = m
+    go n g !m = go (n -1) g' (m + m')
       where
         (m', g') = run g
 
+firstSync :: IntMap Int -> Int
 firstSync g = go 0 0 g
   where
-    go n 100 g = n
-    go n _ g = go (n + 1) m' g'
+    go !n 100 g = n
+    go !n _ g = go (n + 1) m' g'
       where
         (m', g') = run g
 
+part1 :: IntMap Int -> Int
 part1 = countFlashes 100
 
+part2 :: IntMap Int -> Int
 part2 = firstSync
 
 main = do
