@@ -7,6 +7,9 @@ import qualified Data.IntMap as IM
 import Data.IntMap.Strict (IntMap)
 import Data.IntSet (IntSet)
 import qualified Data.IntSet as S
+import Data.List
+import Data.Maybe
+import Control.Monad
 
 type Pt = Int
 
@@ -58,27 +61,18 @@ run = f . propFlashes . tick
   where
     f ((s, l), m) = (s, m)
 
-countFlashes :: Int -> IntMap Int -> Int
-countFlashes n g = go n g 0
+runs :: IntMap Int -> [Int]
+runs g = l 0 g
   where
-    go 0 g !m = m
-    go n g !m = go (n -1) g' (m + m')
+    l x g = x : l (x+m') g'
       where
-        (m', g') = run g
-
-firstSync :: IntMap Int -> Int
-firstSync g = go 0 0 g
-  where
-    go !n 100 g = n
-    go !n _ g = go (n + 1) m' g'
-      where
-        (m', g') = run g
+        (m',g') = run g
 
 part1 :: IntMap Int -> Int
-part1 = countFlashes 100
+part1 = (!! 100) . runs
 
 part2 :: IntMap Int -> Int
-part2 = firstSync
+part2 = succ . fromJust . findIndex (== -100) . (zipWith (-) `ap` tail) . runs
 
 main = do
   let dayNumber = 11 :: Int
