@@ -3,7 +3,10 @@
 
 import Control.Monad
 import Criterion.Main
+import Data.Char
 import Data.Foldable
+import Data.IntMap (IntMap)
+import qualified Data.IntMap as IM
 import Data.Map (Map)
 import qualified Data.Map as M
 import Text.ParserCombinators.Parsec
@@ -12,50 +15,53 @@ eol :: Parser Char
 eol = newline
 
 -- | Build a frequency map
-freqs :: (Foldable f, Ord a) => f a -> Map a Int
-freqs = M.fromListWith (+) . map (,1) . toList
+-- freqs :: (Foldable f, Ord a) => f a -> Map a Int
+freqs = IM.fromListWith (+) . map (,1) . toList
 
-type Rules = Map (Char, Char) Char
+type Rule = IntMap (IntMap Int)
+
+type Str = IntMap Int
+
+type Rules = IntMap Char
+
+to (a, b) = ord a * 100 + ord b
+
+from n = (chr (n `div` 100), chr (n `mod` 100))
 
 pp :: Parser (String, Rules)
 pp = do
   a <- manyTill upper eol
   eol
-  b <- sepEndBy1 ((,) <$> ((,) <$> upper <*> upper) <*> (string " -> " *> upper)) eol
-  pure (a, M.fromList b)
+  b <- sepEndBy1 ((,) <$> ((curry to <$> upper <*> upper)) <*> (string " -> " *> upper)) eol
+  pure (a, IM.fromList b)
 
 -- | Apply a function @n@ times
 apN :: Int -> (a -> a) -> a -> a
 apN 0 f !x = x
 apN !n f !x = apN (n - 1) f (f x)
 
-type CPair = (Char, Char)
-
-type Rule = Map CPair (Map CPair Int)
-
-type Str = Map CPair Int
-
-rulesToMatrix :: Map CPair Char -> Rule
-rulesToMatrix = M.mapWithKey (\(a, b) c -> foo (a, b, c))
+--rulesToMatrix :: IntMap Char -> Rule
+rulesToMatrix = IM.mapWithKey (\n c -> let (a, b) = from n in foo (a, b, c))
   where
-    foo (a, b, c) = M.fromList (map (,1) [(a, c), (c, b)])
+    foo (a, b, c) = IM.fromList (map (,1) (to <$> [(a, c), (c, b)]))
 
-stringToVec :: String -> Map (Char, Char) Int
-stringToVec = freqs . (zip `ap` tail)
+stringToVec :: String -> IntMap Int
+stringToVec = freqs . map to . (zip `ap` tail)
 
-apRule m = M.mapKeysWith (+) (m M.!)
+-- apRule :: Num a => IntMap IM.Key -> IntMap a -> IntMap a
+apRule m = M.mapKeysWith (+) (m IM.!)
 
-distrb :: Map CPair Int -> Int -> Map CPair Int
-distrb m i = M.map (* i) m
+distrb :: IntMap Int -> Int -> IntMap Int
+distrb m i = IM.map (* i) m
 
-norm :: Map (Map CPair Int) Int -> Str
-norm = M.foldlWithKey' (\m k c -> M.unionWith (+) m (distrb k c)) M.empty
+-- norm :: Map (IntMap Int) Int -> Str
+norm = M.foldlWithKey' (\m k c -> IM.unionWith (+) m (distrb k c)) IM.empty
 
-thing :: Rule -> Str -> Str
+-- thing :: Rule -> Str -> Str
 thing r s = norm (apRule r s)
 
-finalize :: Char -> Map CPair Int -> Map Char Int
-finalize c = M.foldlWithKey' (\m (a, _) n -> M.insertWith (+) a n m) (M.singleton c 1)
+-- finalize :: Char -> IntMap Int -> IntMap Int
+finalize c = IM.foldlWithKey' (\m a n -> IM.insertWith (+) (a `div` 100) n m) (IM.singleton (ord c) 1)
 
 part1 :: (Char, Rule, Str) -> Int
 part1 = solve 10
@@ -63,8 +69,8 @@ part1 = solve 10
 part2 :: (Char, Rule, Str) -> Int
 part2 = solve 40
 
-solve :: Int -> (Char, Rule, Str) -> Int
-solve n (c, r', s') = f (finalize c (apN n (thing r') s'))
+-- solve :: Int -> (Char, Rule, Str) -> Int
+solve n (c, r', s') = f (finalize c (apN n (thing r' . M.fromList . IM.toList) s'))
   where
     f m = maximum m - minimum m
 
