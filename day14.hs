@@ -1,6 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TupleSections #-}
-
 import Control.Monad
 import Criterion.Main
 import Data.Char
@@ -15,7 +14,7 @@ eol :: Parser Char
 eol = newline
 
 -- | Build a frequency map
--- freqs :: (Foldable f, Ord a) => f a -> Map a Int
+freqs :: [Int] -> IntMap Int
 freqs = IM.fromListWith (+) . map (,1) . toList
 
 type Rule = IntMap (IntMap Int)
@@ -24,15 +23,17 @@ type Str = IntMap Int
 
 type Rules = IntMap Char
 
+to :: (Char, Char) -> Int
 to (a, b) = ord a * 100 + ord b
 
+from :: Int -> (Char, Char)
 from n = (chr (n `div` 100), chr (n `mod` 100))
 
 pp :: Parser (String, Rules)
 pp = do
   a <- manyTill upper eol
   eol
-  b <- sepEndBy1 ((,) <$> ((curry to <$> upper <*> upper)) <*> (string " -> " *> upper)) eol
+  b <- sepEndBy1 ((,) <$> (curry to <$> upper <*> upper) <*> (string " -> " *> upper)) eol
   pure (a, IM.fromList b)
 
 -- | Apply a function @n@ times
@@ -40,28 +41,27 @@ apN :: Int -> (a -> a) -> a -> a
 apN 0 f !x = x
 apN !n f !x = apN (n - 1) f (f x)
 
---rulesToMatrix :: IntMap Char -> Rule
-rulesToMatrix = IM.mapWithKey (\n c -> let (a, b) = from n in foo (a, b, c))
-  where
-    foo (a, b, c) = IM.fromList (map (,1) (to <$> [(a, c), (c, b)]))
+rulesToMatrix :: Rules -> Rule
+rulesToMatrix = IM.mapWithKey (\n c' -> let c = ord c' in IM.fromList (map (,1) [100 * (n `div` 100) + c, c * 100 + (n `mod` 100)]))
 
-stringToVec :: String -> IntMap Int
-stringToVec = freqs . map to . (zip `ap` tail)
+convString :: String -> Str
+convString = freqs . map to . (zip `ap` tail)
 
--- apRule :: Num a => IntMap IM.Key -> IntMap a -> IntMap a
-apRule m = M.mapKeysWith (+) (m IM.!)
+apRule :: Rule -> Str -> Str
+apRule m = unS . IM.foldMapWithKey (\k b -> S (IM.map (* b) (m IM.! k)))
 
-distrb :: IntMap Int -> Int -> IntMap Int
-distrb m i = IM.map (* i) m
+newtype S = S (IntMap Int)
 
--- norm :: Map (IntMap Int) Int -> Str
-norm = M.foldlWithKey' (\m k c -> IM.unionWith (+) m (distrb k c)) IM.empty
+unS :: S -> IntMap Int
+unS (S m) = m
 
--- thing :: Rule -> Str -> Str
-thing r s = norm (apRule r s)
+instance Monoid S where
+  mempty = S IM.empty
+instance Semigroup S where
+  S a <> S b = S $ IM.unionWith (+) a b
 
--- finalize :: Char -> IntMap Int -> IntMap Int
-finalize c = IM.foldlWithKey' (\m a n -> IM.insertWith (+) (a `div` 100) n m) (IM.singleton (ord c) 1)
+finalize :: Char -> Str -> Str
+finalize c s = unS (S (IM.singleton (ord c) 1) <>  IM.foldMapWithKey (\a n -> S (IM.singleton (a `div` 100) n)) s)
 
 part1 :: (Char, Rule, Str) -> Int
 part1 = solve 10
@@ -69,8 +69,8 @@ part1 = solve 10
 part2 :: (Char, Rule, Str) -> Int
 part2 = solve 40
 
--- solve :: Int -> (Char, Rule, Str) -> Int
-solve n (c, r', s') = f (finalize c (apN n (thing r' . M.fromList . IM.toList) s'))
+solve :: Int -> (Char, Rule, Str) -> Int
+solve n (c, r', s') = f (finalize c (apN n (apRule r') s'))
   where
     f m = maximum m - minimum m
 
@@ -81,7 +81,7 @@ main = do
   let dayFilename = dayString <> ".txt"
   inp <- lines <$> readFile dayFilename
   Right (s, r) <- parseFromFile pp dayFilename
-  let s' = stringToVec s
+  let s' = convString s
   let r' = rulesToMatrix r
   let c = last s
   let inp = (c, r', s')
