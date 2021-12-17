@@ -1,4 +1,3 @@
-import Control.Monad
 import Criterion.Main
 
 step :: (Int, Int, Int, Int) -> (Int, Int, Int, Int)
@@ -26,9 +25,7 @@ part1 :: (Int, Int, Int, Int) -> Int
 part1 (lx, hx, ly, hy) = ((- ly) * ((- ly) - 1)) `div` 2
 
 part2 :: (Int, Int, Int, Int) -> Int
-part2 p@(_, _, ly, _) = length [(x, y) | x <- [0 .. 1000], y <- [(- ly') .. ly'], hits p (x, y)]
-  where
-    ly' = (- ly) + 10
+part2 p@(lx, hx, ly, _) = length [(x, y) | x <- [10 .. hx], y <- [ly .. (- ly)], hits p (x, y)]
 
 main = do
   let dayNumber = 17 :: Int

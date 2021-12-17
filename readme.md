@@ -347,3 +347,22 @@ std dev              82.98 μs   (61.49 μs .. 114.7 μs)
 variance introduced by outliers: 55% (severely inflated)
 ```
 </details>
+
+### Day 17
+<details>
+
+```
+benchmarking day17/part1
+time                 5.458 ns   (5.427 ns .. 5.495 ns)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 5.469 ns   (5.442 ns .. 5.529 ns)
+std dev              129.7 ps   (75.06 ps .. 241.3 ps)
+variance introduced by outliers: 39% (moderately inflated)
+
+benchmarking day17/part2
+time                 21.29 ms   (20.95 ms .. 21.78 ms)
+                     0.998 R²   (0.994 R² .. 1.000 R²)
+mean                 21.24 ms   (21.06 ms .. 21.58 ms)
+std dev              574.4 μs   (281.6 μs .. 844.7 μs)
+```
+</details>
