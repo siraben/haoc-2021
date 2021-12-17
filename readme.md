@@ -348,6 +348,26 @@ variance introduced by outliers: 55% (severely inflated)
 ```
 </details>
 
+### Day 16
+<details>
+
+```
+benchmarking day16/part1
+time                 1.732 μs   (1.706 μs .. 1.776 μs)
+                     0.960 R²   (0.881 R² .. 0.998 R²)
+mean                 1.942 μs   (1.807 μs .. 2.517 μs)
+std dev              796.2 ns   (201.9 ns .. 1.774 μs)
+variance introduced by outliers: 99% (severely inflated)
+
+benchmarking day16/part2
+time                 6.355 μs   (6.287 μs .. 6.452 μs)
+                     0.997 R²   (0.995 R² .. 0.999 R²)
+mean                 6.411 μs   (6.326 μs .. 6.586 μs)
+std dev              384.1 ns   (243.9 ns .. 648.0 ns)
+variance introduced by outliers: 70% (severely inflated)
+```
+</details>
+
 ### Day 17
 <details>
 
