@@ -2,13 +2,13 @@
 
 import Criterion.Main
 import Data.Function
-import qualified Data.IntMap as IM
 import Data.IntMap (IntMap)
+import qualified Data.IntMap as IM
 import Data.IntSet (IntSet)
 import qualified Data.IntSet as IS
+import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.List
 
 type Grid = IntMap Int
 
@@ -83,9 +83,7 @@ neighbors p = conv <$> [(x -1, y), (x, y + 1), (x + 1, y), (x, y -1)]
 dijkstra :: Grid -> Int -> IntMap Int
 dijkstra g s = step1 & step2
   where
-    step1 = let c = IM.keysSet g; a = IS.foldl' go mempty c in (a, c, pins 0 s pempty)
-      where
-        go dv v = IM.insert v (maxBound :: Int) dv
+    step1 = (IM.map (const (maxBound :: Int)) g, IM.keysSet g, pins 0 s pempty)
     step2 (dv, unseen, q)
       | IM.null q = dv
       | otherwise = step2 (dv', unseen', q'')
@@ -96,16 +94,16 @@ dijkstra g s = step1 & step2
         -- for all neighbors of u, visit it and thread the distance map and priority queue
         (dv', q'') = foldl' visit (dv, q') (neighbors u)
           where
-            -- to visit a point p', make sure it's in the graph
-            visit (dv, q') p'
-              | p' `IM.member` g = (dv'', q'')
+            -- to visit a point p, make sure it's in the graph
+            visit (dv, q') p
+              | p `IM.member` g = (dv'', q'')
               | otherwise = (dv, q')
               where
-                -- compute the new distance to p' (store into alt) and
+                -- compute the new distance to p (store into alt) and
                 -- compare against the previous distance
-                alt = d + g IM.! p'
-                -- if it's better then update distance for p' in dv to be alt
-                (dv'', q'') = if alt < dv IM.! p' then (IM.insert p' alt dv, pins alt p' q') else (dv, q')
+                alt = d + g IM.! p
+                -- if it's better then update distance for p in dv to be alt
+                (dv'', q'') = if alt < dv IM.! p then (IM.insert p alt dv, pins alt p q') else (dv, q')
 
 part1 :: (Grid, Int) -> Int
 part1 (inp, n) = dijkstra inp (conv (1, 1)) IM.! conv (n, n)
