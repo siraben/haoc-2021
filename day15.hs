@@ -1,6 +1,5 @@
 {-# LANGUAGE TupleSections #-}
 
-import Data.Foldable
 import Data.Function
 import qualified Data.IntMap as IM
 import Data.IntMap.Strict (IntMap)
@@ -14,13 +13,20 @@ type Grid = IntMap Int
 type Pt = Int
 
 conv :: (Int, Int) -> Pt
-conv (x, y) = 1000 * x + y
+conv (x, y) = 10000 * x + y
 
 from :: Pt -> (Int, Int)
-from n = (n `div` 1000, n `mod` 1000)
+from n = (n `div` 10000, n `mod` 10000)
 
 toGrid :: [[Int]] -> Grid
 toGrid = IM.fromList . concat . zipWith (\x l -> zipWith (curry (\((x, a), y) -> (conv (x, y), a))) (map (x,) l) [1 ..]) [1 ..]
+
+toGrid2 = toGrid . embig
+
+succW :: Int -> Int
+succW n = max ((n + 1) `mod` 10) 1
+
+embig l = concat $ take 5 $ iterate (map (map succW)) [concat $ take 5 (iterate (map succW) r) | r <- l]
 
 {-
  1  function Dijkstra(Graph, source):
@@ -46,6 +52,21 @@ toGrid = IM.fromList . concat . zipWith (\x l -> zipWith (curry (\((x, a), y) ->
 21
 22      return dist[], prev[]
 -}
+
+type PQueue a = IntMap [a]
+
+pminView :: PQueue a -> (a, PQueue a)
+pminView p =
+  let Just (l, p') = IM.minViewWithKey p
+   in case l of
+        (_, []) -> pminView p
+        (k, x : xs) -> (x, if null xs then IM.delete k p' else IM.insert k xs p')
+
+pins :: Int -> a -> PQueue a -> PQueue a
+pins k x = IM.insertWith (++) k [x]
+
+pempty :: PQueue a
+pempty = IM.empty
 
 neighbors :: Grid -> Int -> IntSet
 neighbors g p = IS.filter (`IM.member` g) (IS.fromList (conv <$> [(x -1, y), (x, y + 1), (x + 1, y), (x, y -1)]))
@@ -86,11 +107,13 @@ main = do
   let dayString = "day" <> show dayNumber
   let dayFilename = dayString <> ".txt"
   inp' <- readFile dayFilename
-  let inp = toGrid . map (map (read . pure)) . lines $ inp'
+  let x = map (map (read . pure)) . lines $ inp'
+  let inp = toGrid x
+  let inp2 = toGrid2 x
   let n = length (head $ lines $ inp')
   print (part1 (inp, n))
+  print (part1 (inp2, n * 5))
 
--- -- print (part2 inp)
 -- -- defaultMain
 -- --   [ bgroup
 -- --       dayString
