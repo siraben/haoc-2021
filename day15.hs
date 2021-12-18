@@ -7,8 +7,6 @@ import qualified Data.IntMap as IM
 import Data.IntSet (IntSet)
 import qualified Data.IntSet as IS
 import Data.List
-import Data.Map (Map)
-import qualified Data.Map as M
 
 type Grid = IntMap Int
 
