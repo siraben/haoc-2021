@@ -3,11 +3,12 @@
 import Criterion.Main
 import Data.Function
 import qualified Data.IntMap as IM
-import Data.IntMap.Strict (IntMap)
+import Data.IntMap (IntMap)
 import Data.IntSet (IntSet)
 import qualified Data.IntSet as IS
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.List
 
 type Grid = IntMap Int
 
@@ -61,7 +62,7 @@ embig = concat . take 5 . iterate (map (map succW)) . map (concat . take 5 . ite
 
 type PQueue a = IntMap [a]
 
--- pminView :: PQueue a -> ((Key, a), PQueue a)
+pminView :: PQueue a -> ((Int, a), PQueue a)
 pminView p =
   let Just (l, p') = IM.minViewWithKey p
    in case l of
@@ -74,8 +75,8 @@ pins k x = IM.insertWith (++) k [x]
 pempty :: PQueue a
 pempty = IM.empty
 
-neighbors :: Grid -> Int -> IntSet
-neighbors g p = IS.filter (`IM.member` g) (IS.fromList (conv <$> [(x -1, y), (x, y + 1), (x + 1, y), (x, y -1)]))
+neighbors :: Int -> [Int]
+neighbors p = conv <$> [(x -1, y), (x, y + 1), (x + 1, y), (x, y -1)]
   where
     (x, y) = from p
 
@@ -93,7 +94,7 @@ dijkstra g s = step1 & step2
         ((d, u), q') = pminView q
         unseen' = IS.delete u unseen
         -- for all neighbors of u, visit it and thread the distance map and priority queue
-        (dv', q'') = IS.foldl' visit (dv, q') (neighbors g u)
+        (dv', q'') = foldl' visit (dv, q') (neighbors u)
           where
             -- to visit a point p', make sure it's in the graph
             visit (dv, q') p'
@@ -106,10 +107,13 @@ dijkstra g s = step1 & step2
                 -- if it's better then update distance for p' in dv to be alt
                 (dv'', q'') = if alt < dv IM.! p' then (IM.insert p' alt dv, pins alt p' q') else (dv, q')
 
+part1 :: (Grid, Int) -> Int
 part1 (inp, n) = dijkstra inp (conv (1, 1)) IM.! conv (n, n)
 
+part2 :: (Grid, Int) -> Int
 part2 = part1
 
+main :: IO ()
 main = do
   let dayNumber = 15 :: Int
   let dayString = "day" <> show dayNumber
