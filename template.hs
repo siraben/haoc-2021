@@ -8,10 +8,10 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wno-partial-type-signatures -fdefer-typed-holes -fno-warn-unused-imports #-}
 
-import Control.Applicative
+import Control.Applicative hiding ((<|>))
 import Control.Monad
 import Criterion.Main
-import Data.Bifunctor
+import Control.Arrow
 import Data.Bits
 import Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Char8 as B
@@ -19,21 +19,19 @@ import Data.Char
 import Data.Foldable
 import Data.Function
 import qualified Data.Graph as G
+import Data.IntMap (IntMap)
+import qualified Data.IntMap as IM
 import Data.IntSet (IntSet)
+import qualified Data.IntSet as IM
 import qualified Data.IntSet as IS
-import Data.Ix
 import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
-import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.IO as TIO
-import Data.Vector (Vector)
-import qualified Data.Vector as V
-import qualified Text.ParserCombinators.ReadP as P
+import qualified Text.Parsec.Combinator as P
 
 -- Slow splitOn for prototyping
 splitOn :: String -> String -> [String]
@@ -109,13 +107,10 @@ fixedPoint f = go
       where
         y = f x
 
--- | Signum function
-sgn :: (Ord a, Num a) => a -> a
-sgn x
-  | x < 0 = -1
-  | x == 0 = 0
-  | x > 0 = 1
-  | otherwise = undefined
+-- | Apply a function @n@ times
+apN :: Int -> (a -> a) -> a -> a
+apN 0 f !x = x
+apN !n f !x = apN (n - 1) f (f x)
 
 enum :: (Eq t, Num t) => t -> t -> t -> [t]
 enum l s c
@@ -123,10 +118,9 @@ enum l s c
   | otherwise = l : enum (l + s) s c
 
 range :: (Num a, Ord a) => a -> a -> [a]
-range a b = enum a (sgn (b - a)) b
+range a b = enum a (signum (b - a)) b
 
 -- Start working down here
-part1, part2 :: _ -> Int
 part1 i = undefined
 part2 i = undefined
 
