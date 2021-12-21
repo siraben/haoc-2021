@@ -10,6 +10,7 @@ import qualified Data.Text as T
 splitOn :: String -> String -> [String]
 splitOn sep s = T.unpack <$> T.splitOn (T.pack sep) (T.pack s)
 
+smol :: [Char] -> Bool
 smol (x : _) = isLower x
 smol _ = undefined
 
@@ -26,24 +27,14 @@ expand2 g (a, s1, s2) = maybe [] f (g M.!? a)
     -- return new caves we can visit (except already-visited small ones)
     -- and the updated list of small caves we have visited
     -- c hasn't been visited before or it has been and it's not in the secondary visited set yet
-    f x = concat prep
+    -- if c is a small cave and we can still disallow re-entry
+    -- mark it is visited and do not allow duplicate entries
+    f x = prep =<< x
       where
-        prep =
-          [ if smol c && c `S.member` s1 && s2 -- if c is a small cave and we can still disallow re-entry
-              then [(c, S.insert c s1, False)] -- mark it is visited and do not allow duplicate entries
-              -- otherwise c is not a small cave or we haven't visited it yet or we disallow re-entry
-              -- check if c is a small cave we have visited before, and that we can still re-enter
-              else
-                if smol c && c `S.member` s1 && c /= "start" && c /= "end" && s2
-                  then [(c, s1, False) | not (smol c)] -- if so then visit and disallow re-entry
-                  -- otherwise x is not a small or unvisited cave and we disallow re-entry
-                  else
-                    if not (smol c) -- if x is not small, just visit it
-                      then [(c, s1, s2)]
-                      else -- x must be small and unvisited, so visit it
-                        [(c, S.insert c s1, s2) | c `S.notMember` s1]
-            | c <- x
-          ]
+        prep c
+          | not (smol c) = [(c, s1, s2)]
+          | c `S.member` s1 && s2 = [(c, s1, False)]
+          | otherwise = [(c, S.insert c s1, s2) | c `S.notMember` s1]
 
 solve :: Map String [String] -> String -> String -> Int
 solve g a b = go [(a, S.singleton a)] 0
