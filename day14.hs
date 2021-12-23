@@ -1,13 +1,12 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TupleSections #-}
+
 import Control.Monad
 import Criterion.Main
 import Data.Char
 import Data.Foldable
 import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM
-import Data.Map (Map)
-import qualified Data.Map as M
 import Text.ParserCombinators.Parsec
 
 eol :: Parser Char
@@ -18,8 +17,6 @@ freqs :: [Int] -> IntMap Int
 freqs = IM.fromListWith (+) . map (,1) . toList
 
 type Rule = IntMap (IntMap Int)
-
-type Str = IntMap Int
 
 type Rules = IntMap Char
 
@@ -45,23 +42,24 @@ rulesToMatrix :: Rules -> Rule
 rulesToMatrix = IM.mapWithKey (\n c' -> let c = ord c' in IM.fromList (map (,1) [100 * (n `div` 100) + c, c * 100 + (n `mod` 100)]))
 
 convString :: String -> Str
-convString = freqs . map to . (zip `ap` tail)
+convString = S . freqs . map to . (zip `ap` tail)
 
 apRule :: Rule -> Str -> Str
-apRule m = unS . IM.foldMapWithKey (\k b -> S (IM.map (* b) (m IM.! k)))
+apRule m = IM.foldMapWithKey (\k b -> S (IM.map (* b) (m IM.! k))) . unS
 
-newtype S = S (IntMap Int)
+newtype Str = S (IntMap Int)
 
-unS :: S -> IntMap Int
+unS :: Str -> IntMap Int
 unS (S m) = m
 
-instance Monoid S where
+instance Monoid Str where
   mempty = S IM.empty
-instance Semigroup S where
+
+instance Semigroup Str where
   S a <> S b = S $ IM.unionWith (+) a b
 
 finalize :: Char -> Str -> Str
-finalize c s = unS (S (IM.singleton (ord c) 1) <>  IM.foldMapWithKey (\a n -> S (IM.singleton (a `div` 100) n)) s)
+finalize c (S s) = S (IM.singleton (ord c) 1) <> IM.foldMapWithKey (\a n -> S (IM.singleton (a `div` 100) n)) s
 
 part1 :: (Char, Rule, Str) -> Int
 part1 = solve 10
@@ -70,7 +68,7 @@ part2 :: (Char, Rule, Str) -> Int
 part2 = solve 40
 
 solve :: Int -> (Char, Rule, Str) -> Int
-solve n (c, r', s') = f (finalize c (apN n (apRule r') s'))
+solve n (c, r', s') = f (unS (finalize c (apN n (apRule r') s')))
   where
     f m = maximum m - minimum m
 
