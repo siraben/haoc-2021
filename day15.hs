@@ -64,7 +64,7 @@ pminView :: PQueue a -> ((Int, a), PQueue a)
 pminView p =
   let Just (l, p') = IM.minViewWithKey p
    in case l of
-        (_, []) -> pminView p
+        (_, []) -> pminView p'
         (k, x : xs) -> ((k, x), if null xs then IM.delete k p' else IM.insert k xs p')
 
 pins :: Int -> a -> PQueue a -> PQueue a
