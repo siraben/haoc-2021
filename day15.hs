@@ -31,7 +31,9 @@ succW :: Int -> Int
 succW n = max ((n + 1) `mod` 10) 1
 
 embig :: [[Int]] -> [[Int]]
-embig = concat . take 5 . iterate (map (map succW)) . map (concat . take 5 . iterate (map succW))
+embig = extend (map succW) . map (extend succW)
+  where
+    extend f = concat . take 5 . iterate (map f)
 
 {-
  1  function Dijkstra(Graph, source):
